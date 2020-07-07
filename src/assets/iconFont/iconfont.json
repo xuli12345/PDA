@@ -1,0 +1,86 @@
+{
+  "id": "1919110",
+  "name": "wmsRF",
+  "font_family": "iconfont",
+  "css_prefix_text": "iconfont-",
+  "description": "wms系统移动端app",
+  "glyphs": [
+    {
+      "icon_id": "2527056",
+      "name": "移库",
+      "font_class": "yiku",
+      "unicode": "e6db",
+      "unicode_decimal": 59099
+    },
+    {
+      "icon_id": "3703010",
+      "name": "库存盘点单",
+      "font_class": "navicon-kcpdd",
+      "unicode": "e65f",
+      "unicode_decimal": 58975
+    },
+    {
+      "icon_id": "3833877",
+      "name": "拣货单",
+      "font_class": "pick-note",
+      "unicode": "e649",
+      "unicode_decimal": 58953
+    },
+    {
+      "icon_id": "7036394",
+      "name": "清点",
+      "font_class": "qingdian",
+      "unicode": "e62f",
+      "unicode_decimal": 58927
+    },
+    {
+      "icon_id": "3670649",
+      "name": "密码",
+      "font_class": "mima1",
+      "unicode": "e6d4",
+      "unicode_decimal": 59092
+    },
+    {
+      "icon_id": "7605109",
+      "name": "company",
+      "font_class": "company",
+      "unicode": "e623",
+      "unicode_decimal": 58915
+    },
+    {
+      "icon_id": "13932653",
+      "name": "account",
+      "font_class": "account",
+      "unicode": "e627",
+      "unicode_decimal": 58919
+    },
+    {
+      "icon_id": "588730",
+      "name": "退出",
+      "font_class": "tuichu",
+      "unicode": "e6fc",
+      "unicode_decimal": 59132
+    },
+    {
+      "icon_id": "2325949",
+      "name": "用户",
+      "font_class": "yonghu",
+      "unicode": "e64a",
+      "unicode_decimal": 58954
+    },
+    {
+      "icon_id": "2076243",
+      "name": " 增加",
+      "font_class": "zengjia",
+      "unicode": "e889",
+      "unicode_decimal": 59529
+    },
+    {
+      "icon_id": "8827345",
+      "name": "减少",
+      "font_class": "jianshao",
+      "unicode": "e6aa",
+      "unicode_decimal": 59050
+    }
+  ]
+}
