@@ -251,12 +251,6 @@ function upGoods(data) {
     SqlConn: sqlConn,
     ParameterDes: encryptDesCbc(JSON.stringify(savaData), String(userDes))
   };
-  // console.log(JSON.stringify({
-  //   UserID: userId,
-  //   SqlConn: sqlConn,
-  //   ParameterDes: savaData
-  // }))
-
   return http({
     url: "/saveStockData",
     method: "POST",
@@ -264,6 +258,118 @@ function upGoods(data) {
   });
 }
 
+// 移库保存接口
+function saveStockTransferData(data) {
+  // console.log(data)
+  userDes = JSON.parse(sessionStorage.getItem("user")).userDes;
+  userId = JSON.parse(sessionStorage.getItem("user")).userId;
+  // let type = data.type
+  // let saveData = data.data
+  let saveObj = [];
+  let globalColumns;
+  // console.log(data)
+  data.forEach(element => {
+    // console.log(element.updateData)
+    let obj = {};
+    let update = null,
+      deleted = null,
+      insert = null;
+    if (element.insertData && element.insertData.length > 0) {
+      insert = batchDelete(element.headData, element.insertData);
+      globalColumns = insert.columns;
+    }
+    if (element.updateData && element.updateData.length > 0) {
+      update = batchDelete(element.headData, element.updateData);
+      globalColumns = update.columns;
+    }
+    if (element.deleteData && element.deleteData.length > 0) {
+      deleted = batchDelete(element.headData, element.deleteData);
+      globalColumns = deleted.columns;
+    }
+    // console.log(insert,update,deleted)
+    obj = {
+      TableName: element.TableName,
+      IdentityColumn: element.IdentityColumn ? element.IdentityColumn : null,
+      InsertRow: insert ? insert.arr : null,
+      UpdateRow: update ? update.arr : null,
+      DeleteRow: deleted ? deleted.arr : null,
+      Columns: globalColumns
+    };
+    saveObj.push(obj);
+  });
+  let savaData = {
+    lstSaveData: saveObj
+  };
+  console.log(savaData);
+  console.log(JSON.stringify(savaData));
+  let obj = {
+    UserID: userId,
+    SqlConn: sqlConn,
+    ParameterDes: encryptDesCbc(JSON.stringify(savaData), String(userDes))
+  };
+  return http({
+    url: "/saveStockTransferData",
+    method: "POST",
+    data: JSON.stringify(obj)
+  });
+}
+
+
+// 出库复核
+function saveOutStockData(data) {
+  // console.log(data)
+  userDes = JSON.parse(sessionStorage.getItem("user")).userDes;
+  userId = JSON.parse(sessionStorage.getItem("user")).userId;
+  // let type = data.type
+  // let saveData = data.data
+  let saveObj = [];
+  let globalColumns;
+  // console.log(data)
+  data.forEach(element => {
+    // console.log(element.updateData)
+    let obj = {};
+    let update = null,
+      deleted = null,
+      insert = null;
+    if (element.insertData && element.insertData.length > 0) {
+      insert = batchDelete(element.headData, element.insertData);
+      globalColumns = insert.columns;
+    }
+    if (element.updateData && element.updateData.length > 0) {
+      update = batchDelete(element.headData, element.updateData);
+      globalColumns = update.columns;
+    }
+    if (element.deleteData && element.deleteData.length > 0) {
+      deleted = batchDelete(element.headData, element.deleteData);
+      globalColumns = deleted.columns;
+    }
+    // console.log(insert,update,deleted)
+    obj = {
+      TableName: element.TableName,
+      IdentityColumn: element.IdentityColumn ? element.IdentityColumn : null,
+      InsertRow: insert ? insert.arr : null,
+      UpdateRow: update ? update.arr : null,
+      DeleteRow: deleted ? deleted.arr : null,
+      Columns: globalColumns
+    };
+    saveObj.push(obj);
+  });
+  let savaData = {
+    lstSaveData: saveObj
+  };
+  console.log(savaData);
+  console.log(JSON.stringify(savaData));
+  let obj = {
+    UserID: userId,
+    SqlConn: sqlConn,
+    ParameterDes: encryptDesCbc(JSON.stringify(savaData), String(userDes))
+  };
+  return http({
+    url: "/saveOutStockData",
+    method: "POST",
+    data: JSON.stringify(obj)
+  });
+}
 export {
   menus,
   tableHeadData,
@@ -272,5 +378,7 @@ export {
   collectionData,
   companyList,
   getInterfaceItemData,
-  upGoods
+  upGoods,
+  saveStockTransferData,
+  saveOutStockData
 };

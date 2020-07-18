@@ -21,16 +21,6 @@ export default {
         let path = _this.$router.history.current.path;
         // 在home或者登录页面退出程序
         if (path == "/home" || path == "/login") {
-          // Dialog.confirm({
-          //   // title: "标题",
-          //   message: "退出程序"
-          // })
-          //   .then(() => {
-          //     plus.runtime.quit();
-          //   })
-          //   .catch(() => {
-          //     // on cancel
-          //   });
           if (_this.backnum < 2) {
             plus.nativeUI.toast("再按一次退出应用");
             _this.backnum++;

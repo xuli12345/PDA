@@ -6,6 +6,13 @@
   "description": "wms系统移动端app",
   "glyphs": [
     {
+      "icon_id": "12487591",
+      "name": "装车",
+      "font_class": "zhuangche",
+      "unicode": "e64b",
+      "unicode_decimal": 58955
+    },
+    {
       "icon_id": "2527056",
       "name": "移库",
       "font_class": "yiku",

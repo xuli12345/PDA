@@ -1,5 +1,5 @@
 <template>
-  <div style="padding-bottom:77px">
+  <div class="wrap">
     <nav-bar :title="title"></nav-bar>
     <van-tabs v-model="active">
       <van-tab title="入库扫描">
@@ -105,14 +105,7 @@
               :prop="item.fColumn"
               :label="item.fColumnDes"
               :width="columnWidth"
-            >
-              <!-- <template slot-scope="scope">
-                  <el-input
-                    v-model="scope.row[item.fColumn]"
-                    :disabled="item.fColumn=='fRealReceiptNum'?false:true"
-                  ></el-input>
-              </template>-->
-            </el-table-column>
+            ></el-table-column>
           </el-table>
         </div>
         <bottom-nav :title="'确认收货'" @onSubmit="onSubmit"></bottom-nav>
@@ -293,14 +286,14 @@ export default {
             {
               fColumn: "fProductionDate",
               fColumnDes: "生产日期",
-              fReadOnly: 0
+              fReadOnly: 1
             },
             {
               fColumn: "fExpirationDate",
               fColumnDes: "失效日期",
-              fReadOnly: 0
+              fReadOnly: 1
             },
-            { fColumn: "fShelfLifeDays", fColumnDes: "有效期", fReadOnly: 0 }
+            { fColumn: "fShelfLifeDays", fColumnDes: "有效期", fReadOnly: 1 }
           ];
           this.formData1.push(...ShelfLife);
         }
@@ -365,9 +358,8 @@ export default {
           }
         }
       }
-      // console.log(this.Item_Data);
-      // console.log(this.ruleForm);
-      // return;
+      // 修改货品状态为已收货
+      this.Item_Data.fItemState = 3;
       this.tableData.push(this.Item_Data);
       // console.log(val);
       for (const key in this.ruleForm) {
@@ -395,14 +387,10 @@ export default {
     },
     // 确认收货，请求接口发送数据到数据库
     async sendData() {
-      this.Mst_HeadData.fMstState = 4;
       this.Mst_HeadData.fModifyDate = new Date();
       this.Mst_HeadData.fInboundDate = new Date();
       this.Mst_HeadData.fModifier = this.user.userId;
       this.Mst_HeadData.fModifierCode = this.user.usercode;
-      this.tableData.forEach(ele => {
-        ele.fItemState = 3;
-      });
       console.log(this.tableData);
       // return;
       let res = await collectionData([
@@ -418,10 +406,14 @@ export default {
         }
       ]);
       res = JSON.parse(decryptDesCbc(res.saveDataResult, String(this.userDes)));
-      console.log(res);
+      // console.log(res);
       if (res.state) {
         Toast.success("收货完成");
-        window.location.reload()
+        // 清空数据
+        this.tableData = [];
+        for (const key in this.ruleForm) {
+          this.ruleForm[key] = "";
+        }
       } else {
         Toast(res.errstr);
       }
@@ -470,7 +462,6 @@ export default {
       res = JSON.parse(
         decryptDesCbc(res.getInterfaceEntityResult, String(this.userDes))
       );
-      // console.log(res);
       if (res.State) {
         this.Mst_tableHead = res.lstRet.sort(compare);
       } else {
@@ -557,24 +548,14 @@ export default {
 </script>
 
 <style scoped >
+.wrap {
+  padding-bottom: 77px;
+}
 .goodsData {
   width: 100%;
   height: 30px;
   line-height: 30px;
   text-align: center;
 }
-/* // .table-wrapper .el-input {
-//   margin-left: 0;
-// }
-// .table-wrapper /deep/ .el-input__inner {
-//   border: none !important;
-// }
-// .el-input.is-disabled /deep/ .el-input__inner {
-//   background-color: #fff;
-//   border-color: #fff;
-// }
-// .el-input /deep/ .el-input__inner {
-//   background-color: #fff;
-//   border-color: #fff;
-// } */
+
 </style>

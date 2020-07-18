@@ -1,6 +1,7 @@
 <template>
   <div class="wrap">
-    <h2 class="title">知行易通</h2>
+    <!-- <h2 class="title">知行易通</h2> -->
+    <div class="img"><img style="width:100%" src="../../assets/loginLogo.png" alt=""></div>
     <van-form @submit="onSubmit">
       <van-field
         v-model="username"
@@ -134,7 +135,11 @@ export default {
   justify-content: center;
   align-items: center;
 }
-.title{
+/* .title{
   font-size: 30px;
+} */
+.img{
+  width: 150px;
+  padding: 10px;
 }
 </style>

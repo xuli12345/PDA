@@ -1,7 +1,7 @@
 <template>
   <div style="padding-bottom:77px">
     <nav-bar :title="title"></nav-bar>
-    <van-tabs>
+    <van-tabs v-model="active">
       <van-tab title="拣货操作">
         <template v-for="(item,i) in standardData">
           <van-field
@@ -15,11 +15,30 @@
             @change="judge(item.fColumn,standardForm[item.fColumn])"
           ></van-field>
         </template>
+        <el-table :data="goodsData">
+          <el-table-column type="index" width="50" label="序号"></el-table-column>
+          <el-table-column
+            v-for="(item,i) in goodsDataHead"
+            :key="i"
+            :prop="item.fColumn"
+            :label="item.fColumnDes"
+            width="120"
+          ></el-table-column>
+          <el-table-column fixed="right" label="操作" width="50">
+            <template slot-scope="scope">
+              <el-button
+                @click="handleClick(scope.row,scope.$index)"
+                :disabled="isBeginPick"
+                type="text"
+              >拣货</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
         <bottom-nav
-          :title="'确认'"
-          :titleRight="'返回'"
-          @onSubmit="standardSubmit"
-          @resetData="resetStandar"
+          :title="titleLeft"
+          :titleRight="titleRight"
+          @onSubmit="stockSubmit"
+          @resetData="resetStock"
         ></bottom-nav>
       </van-tab>
       <van-tab title="拣货详情">
@@ -36,20 +55,11 @@
             ></van-field>
           </template>
         </van-cell-group>
-        <el-table :data="tableData" style="width: 100%">
-          <el-table-column
-            v-for="(item,i) in tableHead"
-            :key="i"
-            :prop="item.fColumn"
-            :label="item.fColumnDes"
-            :width="columnWidth"
-          ></el-table-column>
-        </el-table>
         <bottom-nav
-          :title="'拣货完成'"
+          :title="'确认'"
           :titleRight="'取消拣货'"
-          @onSubmit="stockSubmit"
-          @resetData="resetStock"
+          @onSubmit="onConfirm"
+          @resetData="cancelPick"
         ></bottom-nav>
       </van-tab>
     </van-tabs>
@@ -75,52 +85,73 @@ export default {
   },
   data() {
     return {
+      active: 0,
       title: "拣货",
-      value: "",
+      titleLeft: "开始拣货",
+      titleRight: "返回",
+      //拣货按钮 是否开始拣货
+      isBeginPick: true,
       //   拣货操作数据
       standardData: [
         { fColumn: "fOutboundOrderNo", fColumnDes: "出库单号", fReadOnly: 0 },
         { fColumn: "fCustomerName", fColumnDes: "客户", fReadOnly: 1 },
-        { fColumn: "fMstStateName", fColumnDes: "打印状态", fReadOnly: 1 },
-         { fColumn: "fProductBarCode", fColumnDes: "货品条码", fReadOnly: 0 },
-         { fColumn: "fProductName", fColumnDes: "货品名称", fReadOnly: 1 },
-        { fColumn: "fOutboundNum", fColumnDes: "出库数量", fReadOnly: 1 },
-        { fColumn: "fRealOutboundNum", fColumnDes: "实出数量", fReadOnly: 0 },
-        {
-          fColumn: "fAreadyOutboundNum",
-          fColumnDes: "已出库数量",
-          fReadOnly: 1
-        }
-        //   { fColumn:'fProductName', fColumnDes:'货品名称', fReadOnly:1 },
-        //   { fColumn:'fStockType', fColumnDes:'库存类型', fReadOnly:1 },
-        //   { fColumn:'fBatchNo', fColumnDes:'批次', fReadOnly:1},
-        //   { fColumn:'fProductionDate', fColumnDes:'生产日期', fReadOnly:1},
-        //   { fColumn:'fExpirationDate', fColumnDes:'失效日期', fReadOnly:1},
+        { fColumn: "fMstStateName", fColumnDes: "打印状态", fReadOnly: 1 }
       ],
       standardForm: {
         fCustomerName: "",
+        fProductName: "",
         fOutboundOrderNo: "",
-        fOutboundNum:'',
-        fRealOutboundNum:''
+        fOutboundNum: "",
+        fRealOutboundNum: ""
       },
+      // 出库单商品信息
+      goodsData: [],
+      // 出库单商品表格表头信息
+      goodsDataHead: [
+        { fColumn: "fProductName", fColumnDes: "货品名称", fReadOnly: 1 },
+        { fColumn: "fStorageCode", fColumnDes: "库位编码", fReadOnly: 1 },
+        { fColumn: "fProductBarCode", fColumnDes: "货品条码", fReadOnly: 1 },
+        { fColumn: "fStorageBarCode", fColumnDes: "库位", fReadOnly: 1 },
+        { fColumn: "fRealOutboundNum", fColumnDes: "拣货数量", fReadOnly: 0 }
+      ],
       // 拣货详情数据
       stockData: [
         { fColumn: "fOutboundOrderNo", fColumnDes: "出库单号", fReadOnly: 1 },
-        { fColumn: "fJianUser", fColumnDes: "拣货员", fReadOnly: 1 }
+        { fColumn: "fPickUser", fColumnDes: "拣货员", fReadOnly: 1 },
+        { fColumn: "fStorageCode", fColumnDes: "库位", fReadOnly: 1 },
+        { fColumn: "fStorageCodeC", fColumnDes: "库位", fReadOnly: 0 },
+        { fColumn: "fBatchNo", fColumnDes: "批次", fReadOnly: 1 },
+        { fColumn: "fBatchNoC", fColumnDes: "批次", fReadOnly: 0 },
+        { fColumn: "fOutboundNum", fColumnDes: "货品数量", fReadOnly: 1 },
+        { fColumn: "fOutboundBoxNum", fColumnDes: "装箱数量", fReadOnly: 1 },
+        { fColumn: "fRealOutboundNum", fColumnDes: "拣货数量", fReadOnly: 0 }
       ],
-      stockForm: {},
-      //拣货详情表格数据
-      tableData: [],
-      columnWidth: 120,
-      tableHead: [
-        { fColumn: "fProductName", fColumnDes: "货品名称", fReadOnly: 1 },
-        { fColumn: "fProductBarCode", fColumnDes: "货品条码", fReadOnly: 1 },
-        { fColumn: "fBatchNo", fColumnDes: "批次号", fReadOnly: 1 },
-        { fColumn: "fInboundNum", fColumnDes: "入库数量", fReadOnly: 1 },
-        { fColumn: "fRealReceiptNum", fColumnDes: "实收数量", fReadOnly: 1 },
-        { fColumn: "fCollectNum", fColumnDes: "待收数量", fReadOnly: 1 }
-      ],
-      user: JSON.parse(sessionStorage.getItem("user"))
+      stockForm: {
+        fOutboundOrderNo: "",
+        fPickUser: "",
+        fStorageCode: "",
+        fStorageCodeC: "",
+        fBatchNo: "",
+        fBatchNoC: "",
+        fOutboundNum: "",
+        fOutboundBoxNum: "",
+        fRealOutboundNum: ""
+      },
+      user: JSON.parse(sessionStorage.getItem("user")),
+      //扫描出库单获取到的主表数据
+      Mst_HeadData: {},
+      // 主表表头
+      Mst_tableHead: [],
+      // 扫描每个货品条码获取到的数据
+      Item_Data: {},
+      // 字表表头数据
+      Item_tableHead: [],
+      // 开始拣货时间
+      fPickStartDate: null,
+      // 结束拣货时间
+      fPickEndDate: null,
+      // 当前拣货的货品对应商品信息的下标index
+      pickIndex: -1
     };
   },
   methods: {
@@ -129,11 +160,10 @@ export default {
       // 入库单号
       if (str == "fOutboundOrderNo") {
         return this.getStock(value);
-      }
-      else if (str == "fProductBarCode") {
+      } else if (str == "fProductBarCode") {
         // 货品条码
         return this.getGoods(value);
-      } 
+      }
       //else if (str == "fRealReceiptNum") {
       //   // 计算待收数量
       //   return this.countWaitNum(value);
@@ -153,8 +183,6 @@ export default {
       res = JSON.parse(
         decryptDesCbc(res.qureyDataResult, String(this.user.userDes))
       );
-      // console.log(res)
-      // return
       let data;
       if (res.State) {
         if (res.Data == "[]") {
@@ -175,11 +203,40 @@ export default {
       // this.ruleForm = data;
       this.standardForm.fCustomerName = data.fCustomerName;
       //主表数据
-      // this.Mst_HeadData = data;
+      this.Mst_HeadData = data;
       console.log(this.standardForm);
+      this.getAllGoods();
     },
-    async getGoods(v){
-      let goodsRes =  await getTableBodyData('v_OutboundOrder_Item',[
+    //根据出库单号获取所有货品信息
+    async getAllGoods() {
+      let res = await getTableBodyData("v_OutboundOrder_Item", [
+        {
+          Computer: "=",
+          DataFile: "fMstID",
+          Value: this.fID
+        }
+      ]);
+      res = JSON.parse(
+        decryptDesCbc(res.qureyDataResult, String(this.user.userDes))
+      );
+      let allGoods = [];
+      console.log(res);
+      if (res.State) {
+        allGoods = JSON.parse(res.Data);
+      }
+      allGoods.forEach(item => {
+        for (const key in item) {
+          if (JSON.stringify(item[key]).indexOf("/Date") != -1) {
+            item[key] = timeCycle(item[key]);
+          }
+        }
+      });
+      this.goodsData = allGoods;
+      console.log(allGoods);
+      console.log(this.goodsData);
+    },
+    async getGoods(v) {
+      let goodsRes = await getTableBodyData("v_OutboundOrder_Item", [
         {
           Computer: "=",
           DataFile: "fMstID",
@@ -190,49 +247,210 @@ export default {
           DataFile: "fProductBarCode",
           Value: v
         }
-      ])
+      ]);
       goodsRes = JSON.parse(
-        decryptDesCbc(goodsRes.qureyDataResult,String(this.user.userDes))
-      )
-      let goodsData
-      if(goodsRes.State){
-        if(goodsRes.Data=='[]'){
+        decryptDesCbc(goodsRes.qureyDataResult, String(this.user.userDes))
+      );
+      let goodsData;
+      if (goodsRes.State) {
+        if (goodsRes.Data == "[]") {
           Toast("该货品条码不存在，请确认货品条码是否正确");
-          return
+          return;
         }
-        goodsData = JSON.parse(goodsRes.Data)[0]
-      }else{
+        goodsData = JSON.parse(goodsRes.Data)[0];
+      } else {
         Toast(res.Message);
-        return
+        return;
       }
-      for(const key in goodsData){
-        if(JSON.stringify(goodsData[key]).indexOf("/Date")!=-1){
+      for (const key in goodsData) {
+        if (JSON.stringify(goodsData[key]).indexOf("/Date") != -1) {
           goodsData[key] = timeCycle(goodsData[key]);
         }
       }
-      console.log(goodsData)
+      console.log(goodsData);
+      this.Item_Data = goodsData;
+      for (const key in this.standardForm) {
+        for (const child in goodsData) {
+          if (key == child) {
+            this.standardForm[key] = goodsData[child];
+          }
+        }
+      }
+      // 实出数量默认与出库数量一致
+      this.standardForm.fRealOutboundNum = this.standardForm.fOutboundNum;
     },
-    //   标准移库
-    standardSubmit() {
-      console.log("标准移库");
-      let a = this.standardForm.Ostock;
-      let pattern = /^\d{6}$/;
-      console.log(a);
-      console.log(pattern.test(a));
+    // 点击拣货跳转到拣货详情
+    handleClick(v, i) {
+      // console.log(v, i);
+      this.pickIndex = i;
+      this.active = 1;
+      for (const index in this.stockForm) {
+        for (const idx in v) {
+          if (index == idx) {
+            this.stockForm[index] = v[idx];
+          }
+        }
+      }
+      this.stockForm.fPickUser = this.user.userId;
     },
-    // 库位移库
+    // 点击按钮开始拣货或完成拣货
     stockSubmit() {
-      console.log("库位移库");
+      if (this.standardForm.fOutboundOrderNo == "") {
+        Toast("请先输入出库单号");
+        return;
+      }
+      if (this.titleLeft == "开始拣货") {
+        this.standardData[0].fReadOnly = 1;
+        this.isBeginPick = false;
+        this.titleLeft = "拣货完成";
+        this.fPickStartDate = new Date();
+      } else if ((this.titleLeft = "拣货完成")) {
+        Dialog.confirm({
+          title: "提示",
+          message: "是否已经拣货完成"
+        })
+          .then(() => {
+            // comfirm = true;
+            this.fPickEndDate = new Date();
+            this.sendData();
+            this.titleLeft = "开始拣货";
+            this.isBeginPick = true;
+          })
+          .catch(() => {
+            // on cancel
+          });
+      }
     },
-    // 清空标准移库
-    resetStandar() {
-      console.log("清空标准移库数据");
-      this.standardForm = {};
+    async sendData() {
+      console.log("完成拣货");
+      this.Mst_HeadData.fPickStartDate = this.fPickStartDate;
+      this.Mst_HeadData.fPickEndDate = this.fPickEndDate;
+      let res = await collectionData([
+        {
+          TableName: "t_OutboundOrder_Mst",
+          updateData: [this.Mst_HeadData],
+          headData: this.Mst_tableHead
+        },
+        {
+          TableName: "t_OutboundOrder_Item",
+          updateData: this.goodsData,
+          headData: this.Item_tableHead
+        }
+      ]);
+      res = JSON.parse(
+        decryptDesCbc(res.saveDataResult, String(this.user.userDes))
+      );
+      console.log(res);
+      if (res.state) {
+        Toast.success("拣货完成");
+        // 清空数据
+        this.goodsData = [];
+        for (const key in this.standardForm) {
+          this.standardForm[key] = "";
+        }
+        for (const key in this.stockForm) {
+          this.stockForm[key] = "";
+        }
+      } else {
+        Toast(res.errstr);
+      }
     },
-    // 清空库位移库
+    // 返回按钮
     resetStock() {
-      console.log("清空库位移库");
+      // console.log(this.isBeginPick === false);
+      if (this.isBeginPick) {
+        this.$router.back();
+        try {
+          setTimeout(() => {
+            let path = window.location.hash.slice(1);
+            this.$router.replace(path);
+          }, 10);
+          return false;
+        } catch (e) {}
+      } else {
+        Dialog.confirm({
+          message: "当前拣货尚未完成，是否确定退出"
+        })
+          .then(() => {
+            this.$router.back();
+            try {
+              setTimeout(() => {
+                let path = window.location.hash.slice(1);
+                this.$router.replace(path);
+              }, 10);
+              return false;
+            } catch (e) {}
+          })
+          .catch(() => {
+            return false;
+          });
+      }
+    },
+    // 拣货详情确认按钮
+    onConfirm() {
+      console.log("拣货详情确认");
+      this.active = 0;
+      // this.pickIndex
+      // console.log(this.goodsData)
+      let changeData = this.goodsData[this.pickIndex];
+      // console.log(changeData);
+      this.goodsData[
+        this.pickIndex
+      ].fRealOutboundNum = this.stockForm.fRealOutboundNum;
+      // console.log(this.goodsData[this.pickIndex]);
+      let _pickIndex = this.pickIndex;
+
+      this.goodsData[this.pickIndex];
+      for (const key in this.goodsData[_pickIndex]) {
+        for (const item in this.stockForm) {
+          if (key == item) {
+            this.goodsData[_pickIndex][key] = this.stockForm[item];
+          }
+        }
+      }
+      this.goodsData[_pickIndex].fBatchNo = this.stockForm.fBatchNoC;
+      this.goodsData[_pickIndex].fStorageCode = this.stockForm.fStorageCodeC;
+      this.goodsData[_pickIndex].fItemState = 3;
+      // console.log(this.goodsData[_pickIndex]);
+    },
+    // 拣货详情取消拣货
+    cancelPick() {
+      console.log("拣货详情取消拣货");
+      this.active = 0;
+      for (const key in this.stockForm) {
+        this.stockForm[key] = "";
+      }
+    },
+    //获取主表表格的表头，保存的时候需要用到
+    async getTableHead() {
+      let res = await getTableHeadData("t_OutboundOrder_Mst");
+      res = JSON.parse(
+        decryptDesCbc(res.getInterfaceEntityResult, String(this.user.userDes))
+      );
+      if (res.State) {
+        this.Mst_tableHead = res.lstRet.sort(compare);
+      } else {
+        this.$message.error(res.Message);
+      }
+    },
+    // 获取子表表格表头
+    async getItemTableHead() {
+      let res = await getTableHeadData("t_OutboundOrder_Item");
+      res = JSON.parse(
+        decryptDesCbc(res.getInterfaceEntityResult, String(this.user.userDes))
+      );
+      // console.log(res);
+      if (res.State) {
+        this.Item_tableHead = res.lstRet.sort(compare);
+      } else {
+        this.$message.error(res.Message);
+      }
     }
+  },
+  created() {
+    this.standardForm.fPickUser = this.user.userId;
+    this.getItemTableHead();
+    this.getTableHead();
   }
 };
 </script>

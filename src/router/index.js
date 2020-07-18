@@ -8,7 +8,7 @@ const originalReplace = VueRouter.prototype.replace
 VueRouter.prototype.replace = function replace(location) {
   return originalReplace.call(this, location).catch(err => err)
 }
-Vue.use(VueRouter);
+// Vue.use(VueRouter);
 const originalPush = VueRouter.prototype.push
 VueRouter.prototype.push = function push(location) {
   return originalPush.call(this, location).catch(err => err)
@@ -85,7 +85,6 @@ var mainRoutes = {
           name: 'Picking',
           meta: {
             title: '拣货',
-            // isTab:true
           },
           component: () => import("@/views/pages/DeliverGoods/Picking/Picking")
         },
@@ -93,10 +92,17 @@ var mainRoutes = {
           path: 'Check',
           name: 'Check',
           meta: {
-            title: '复核清单',
-            // isTab:true
+            title: '复核',
           },
           component: () => import("@/views/pages/DeliverGoods/Check/Check")
+        },
+        {
+          path: 'Entrucking',
+          name: 'Entrucking',
+          meta: {
+            title: '装车',
+          },
+          component: () => import("@/views/pages/DeliverGoods/Entrucking/Entrucking")
         }
       ]
     },
@@ -114,7 +120,6 @@ var mainRoutes = {
           name: 'moveStore',
           meta: {
             title: '移库',
-            // isTab:true
           },
           component: () => import("@/views/pages/StockManger/moveStore/moveStore")
         },
@@ -123,7 +128,6 @@ var mainRoutes = {
           name: 'inventory',
           meta: {
             title: '盘点',
-            // isTab:true
           },
           component: () => import("@/views/pages/StockManger/Inventory/Inventory")
         }

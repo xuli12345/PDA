@@ -10,7 +10,9 @@
         </div>
       </div>
     </template>
-    <template v-else><router-view></router-view></template>
+    <template v-else>
+      <router-view></router-view>
+    </template>
   </div>
 </template>
 
@@ -37,29 +39,29 @@ export default {
           pageUrl: "/stockManger/inventory"
         }
       ],
-      isRouter:true
+      iShow: true
     };
   },
   methods: {
     toItem(url) {
-      // console.log(url);
-      this.isRouter=false
       this.$router.push(url);
     }
   },
-  destoryed(){
-    console.log('销毁')
+  mounted() {
+    let path = this.$route.path;
+    if (path == "/stockManger") {
+      this.iShow = true;
+    } else {
+      this.iShow = false;
+    }
   },
-  mounted(){
-    // console.log(this.$route)
-  },
-  computed:{
-    iShow:function(){
-      let path = this.$route.path
-      if(path=='/stockManger'){
-        return true
-      }else{
-        return false
+  watch: {
+    $route: function() {
+      let path = this.$route.path;
+      if (path == "/stockManger") {
+        this.iShow = true;
+      } else {
+        this.iShow = false;
       }
     }
   }

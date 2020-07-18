@@ -1,8 +1,8 @@
 <template>
   <div class="wrap">
     <div class="headUser">
-      <span class="headSpan"><van-icon class-prefix="iconfont" name="yonghu" color="#ffffff" size='0.426667rem' style="padding-right:5px"/>&nbsp;&nbsp;{{user.username}}</span>
-      <span @click="Logout"><van-icon class-prefix="iconfont" name="tuichu" color="#ffffff" size='0.426667rem'/></span>
+      <span class="headSpan"><van-icon class-prefix="iconfont" name="yonghu" color="#ffffff" size='0.533333rem' style="padding-right:5px"/>&nbsp;&nbsp;{{user.username}}</span>
+      <span @click="Logout"><van-icon class-prefix="iconfont" name="tuichu" color="#ffffff" size='0.533333rem'/></span>
     </div>
     <div class="box">
       <div class="box-item" v-for="(item,idx) in menu" :key="idx" @click="toItem(item.pageUrl)">
@@ -36,7 +36,7 @@ export default {
           pageUrl: "/uploadGoods"
         },
         {
-          MenuName: "发货管理",
+          MenuName: "出库管理",
           icon: "exchange",
           iconUrl: imgs3,
           pageUrl: "/deliverGoods"
@@ -88,7 +88,7 @@ export default {
   justify-content: space-around;
   background-color: #1989fa;
   color: #fff;
-  font-size: 16px;
+  font-size: 20px;
 }
 .headUser span {
   padding: 0 20px;

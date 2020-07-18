@@ -1,7 +1,7 @@
 <template>
   <van-sticky>
     <div class="navHead">
-      <van-icon class="icon" name="arrow-left" size="25" @click="backPage" />
+      <van-icon class="icon" name="arrow-left" size="0.8rem" @click="backPage" />
       <div class="title">{{title}}</div>
     </div>
   </van-sticky>
@@ -29,8 +29,8 @@ export default {
 <style scoped>
 .navHead {
   width: 100%;
-  height: 50px;
-  line-height: 50px;
+  height: 60px;
+  line-height: 60px;
   position: relative;
   background-color: #1989fa;
   color: #fff;
@@ -46,7 +46,7 @@ export default {
   z-index: 10;
 }
 .navHead .title {
-  font-size: 20px;
+  font-size: 25px;
   width: 100%;
   height: 100%;
   text-align: center;

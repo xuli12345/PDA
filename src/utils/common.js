@@ -259,3 +259,26 @@ export function compare(obj1, obj2) {
     return 0;
   }
 }
+
+// 根据获取到的表头信息，设置默认值
+export function setDefaultForm(headData) {
+  let insertData = {};
+  headData.forEach(item => {
+    if (item.fDataType == "datetime") {
+      insertData[item.fColumn] = new Date();
+    } else if (item.fDataType == "bit") {
+      insertData[item.fColumn] = true;
+    } else if (item.fDataType == "int") {
+      insertData[item.fColumn] = 0;
+    } else {
+      insertData[item.fColumn] = "";
+    }
+    // 建立人id 和建立人代号
+    // if (item.fColumn == "fCreater") {
+    //   insertData[item.fColumn] = this.user.userId;
+    // } else if (item.fColumn == "fCreaterCode") {
+    //   insertData[item.fColumn] = this.user.usercode;
+    // }
+  });
+  return insertData;
+}

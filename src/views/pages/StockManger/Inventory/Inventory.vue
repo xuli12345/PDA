@@ -1,5 +1,5 @@
 <template>
-  <div style="padding-bottom:77px">
+  <div class="wrap">
     <nav-bar :title="title"></nav-bar>
     <van-tabs v-model="active">
       <van-tab title="盘点操作">
@@ -13,26 +13,7 @@
               @change="judge(item.fColumn,standardForm[item.fColumn])"
               clearable
               :disabled="item.fReadOnly==1?true:false"
-            >
-              <!-- <template v-if="item.fColumn=='moveNum'" #button>
-                <van-button
-                  @click="addNum(item.fColumn)"
-                  size="mini"
-                  type="primary"
-                  color="#1989fa"
-                >
-                  <van-icon class-prefix="iconfont" name="zengjia" color="#ffffff" />
-                </van-button>
-                <van-button
-                  @click="reduceNum(item.fColumn)"
-                  size="mini"
-                  type="primary"
-                  color="#1989fa"
-                >
-                  <van-icon class-prefix="iconfont" name="jianshao" color="#ffffff" />
-                </van-button>
-              </template>-->
-            </van-field>
+            ></van-field>
           </van-cell-group>
         </template>
       </van-tab>
@@ -100,10 +81,12 @@ export default {
         // { fColumn: "fCheckID", fColumnDes: "盘点人", fReadOnly: 1 },
         { fColumn: "fCheckName", fColumnDes: "盘点人", fReadOnly: 1 },
         { fColumn: "fProductBarCode", fColumnDes: "货品条码", fReadOnly: 0 },
+        { fColumn: "fStorageBarCode", fColumnDes: "库位", fReadOnly: 0 },
+        { fColumn: "fContainerCode", fColumnDes: "容器号", fReadOnly: 0 },
         { fColumn: "fProductName", fColumnDes: "货品名称", fReadOnly: 1 },
-        { fColumn: "fStockNum", fColumnDes: "库存数量", fReadOnly: 1 },
-        { fColumn: "fCheckNum", fColumnDes: "盘点数量", fReadOnly: 0 },
-        { fColumn: "fDifferenceNum", fColumnDes: "差异数量", fReadOnly: 1 }
+        // { fColumn: "fStockNum", fColumnDes: "库存数量", fReadOnly: 1 },
+        { fColumn: "fCheckNum", fColumnDes: "盘点数量", fReadOnly: 0 }
+        // { fColumn: "fDifferenceNum", fColumnDes: "差异数量", fReadOnly: 1 }
       ],
       //   form表单数据
       standardForm: {
@@ -111,6 +94,8 @@ export default {
         fCheckID: "",
         fCheckName: "",
         fProductBarCode: "",
+        fStorageBarCode: "",
+        fContainerCode: "",
         fProductName: "",
         fStockNum: "",
         fCheckNum: "",
@@ -126,8 +111,8 @@ export default {
       Item_tableHead: [],
       //   盘点明细数据
       stockData: [
-        { fColumn: "fCheckOrderNO", fColumnDes: "盘点单号", fReadOnly: 0 },
-        { fColumn: "fCheckID", fColumnDes: "盘点人ID", fReadOnly: 1 }
+        { fColumn: "fCheckOrderNO", fColumnDes: "盘点单号", fReadOnly: 0 }
+        // { fColumn: "fCheckID", fColumnDes: "盘点人ID", fReadOnly: 1 }
       ],
       stockForm: {
         fCheckOrderNO: "",
@@ -135,13 +120,16 @@ export default {
       },
       //   盘点明细表格数据
       tableData: [],
+      // 盘点明细表头
       tableHead: [
-        { fColumn: "fCheckID", fColumnDes: "盘点人ID", fReadOnly: 1 },
+        // { fColumn: "fCheckID", fColumnDes: "盘点人ID", fReadOnly: 1 },
         { fColumn: "fProductBarCode", fColumnDes: "货品条码", fReadOnly: 0 },
         { fColumn: "fProductName", fColumnDes: "货品名称", fReadOnly: 1 },
-        { fColumn: "fStockNum", fColumnDes: "库存数量", fReadOnly: 1 },
-        { fColumn: "fCheckNum", fColumnDes: "盘点数量", fReadOnly: 0 },
-        { fColumn: "fDifferenceNum", fColumnDes: "差异数量", fReadOnly: 1 }
+        { fColumn: "fStorageBarCode", fColumnDes: "库位", fReadOnly: 0 },
+        { fColumn: "fContainerCode", fColumnDes: "容器号", fReadOnly: 0 },
+        // { fColumn: "fStockNum", fColumnDes: "库存数量", fReadOnly: 1 },
+        { fColumn: "fCheckNum", fColumnDes: "盘点数量", fReadOnly: 0 }
+        // { fColumn: "fDifferenceNum", fColumnDes: "差异数量", fReadOnly: 1 }
       ],
       columnWidth: 120,
       fID: null,
@@ -193,11 +181,11 @@ export default {
           data[key] = timeCycle(data[key]);
         }
       }
-      //   console.log(data);
+      console.log(data);
       this.stockForm.fCheckOrderNO = data.fCheckOrderNO;
       // this.stockData.fCheckOrderNO = data.fCheckOrderNO;
       this.stockForm.fCheckID = this.user.userId;
-      //     this.stockForm.fCheckName=data.fCheckName
+      // this.stockForm.fCheckName=data.fCheckName
       // this.ruleForm = data;
       //主表数据
       this.Mst_HeadData = data;
@@ -268,11 +256,16 @@ export default {
     },
     // 开始盘点 完成盘点
     onSubmit() {
+      if (this.standardForm.fCheckOrderNO == "") {
+        Toast("请先输入盘点单号");
+        return;
+      }
       if (this.titleLeft == "开始盘点") {
-        console.log("开始盘点");
+        // console.log("开始盘点");
+        this.standardData[0].fReadOnly = 1;
         this.titleLeft = "完成盘点";
         this.titleRight = "下一个货品";
-        console.log(this.Mst_HeadData);
+        // console.log(this.Mst_HeadData);
       } else if (this.titleLeft == "完成盘点") {
         console.log("完成盘点");
         Dialog.confirm({
@@ -282,6 +275,9 @@ export default {
           .then(() => {
             // comfirm = true;
             this.sendData();
+            this.standardData[0].fReadOnly = 0;
+            this.titleLeft = "开始盘点";
+            this.titleRight = "返回";
           })
           .catch(() => {
             // on cancel
@@ -290,10 +286,8 @@ export default {
     },
     // 完成盘点，提交数据
     async sendData() {
-      console.log("提交数据");
-
-      console.log(this.tableData);
-      // return
+      // console.log(this.Mst_HeadData);
+      // return;
       let res = await collectionData([
         {
           TableName: "t_CheckOrder_Mst",
@@ -315,14 +309,11 @@ export default {
         // 清空数据
         this.tableData = [];
         for (const key in this.standardForm) {
-          if (key != "fCheckName" && key != "fCheckID") {
-            this.standardForm[key] = "";
-          }
+          this.standardForm[key] = "";
         }
         for (const key1 in this.stockForm) {
-            this.stockForm[key1] = "";
+          this.stockForm[key1] = "";
         }
-
       } else {
         Toast(res.errstr);
       }
@@ -363,6 +354,7 @@ export default {
           }
         }
         this.Item_Data.fCheckID = this.user.userId;
+        this.Item_Data.fItemState = 2;
         console.log(this.Item_Data);
         this.tableData.push(this.Item_Data);
         for (const key in this.standardForm) {
@@ -419,6 +411,9 @@ export default {
 </script>
 
 <style scoped>
+.wrap{
+  padding-bottom:77px
+}
 .moveNum {
   height: 24px;
   line-height: 24px;

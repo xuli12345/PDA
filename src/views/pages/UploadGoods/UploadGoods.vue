@@ -1,5 +1,5 @@
 <template>
-  <div style="padding-bottom:77px">
+  <div class="wrap">
     <nav-bar :title="title"></nav-bar>
     <van-tabs>
       <van-tab title="整箱上架">
@@ -67,12 +67,15 @@ export default {
       formData: [
         { fColumn: "fInboundOrderNo", fColumnDes: "入库单", fReadOnly: 0 },
         { fColumn: "fContainerCode", fColumnDes: "容器号", fReadOnly: 0 },
-        { fColumn: "fStorageID", fColumnDes: "库位", fReadOnly: 0 }
+        //库位条码，根据库位条码获取到库位的id，然后保存
+        // { fColumn: "fStorageID", fColumnDes: "库位", fReadOnly: 0 },
+        { fColumn: "fStorageBarCode", fColumnDes: "库位", fReadOnly: 0 }
       ],
       formData1: [
         { fColumn: "fInboundOrderNo", fColumnDes: "入库单", fReadOnly: 0 },
         { fColumn: "fProductBarCode", fColumnDes: "货品条码", fReadOnly: 0 },
-        { fColumn: "fStorageID", fColumnDes: "库位", fReadOnly: 0 },
+        // { fColumn: "fStorageID", fColumnDes: "库位", fReadOnly: 0 },
+        { fColumn: "fStorageBarCode", fColumnDes: "库位", fReadOnly: 0 },
         { fColumn: "fProductName", fColumnDes: "货品名称", fReadOnly: 1 },
         { fColumn: "fBatchNo", fColumnDes: "批次号", fReadOnly: 1 },
         {
@@ -94,12 +97,11 @@ export default {
       allForm: {
         fInboundOrderNo: "",
         fContainerCode: "",
-        fStorageID: ""
+        fStorageBarCode: ""
       },
-      // allFid:'',
       splitForm: {
         fInboundOrderNo: "",
-        fStorageID: "",
+        fStorageBarCode: "",
         fProductBarCode: "",
         fProductName: "",
         fBatchNo: "",
@@ -110,7 +112,9 @@ export default {
         WaitUpNum: "",
         fHasPutonNum: ""
       },
-      fID: "",
+      fID: 0,
+      // 库位ID
+      fStorageID:0,
       Item_tableHead: [],
       userDes: JSON.parse(sessionStorage.getItem("user")).userDes,
       user: JSON.parse(sessionStorage.getItem("user")),
@@ -133,6 +137,9 @@ export default {
       } else if (str == "fPutonNum") {
         // 计算待上架数量
         return this.countWaitNum(value);
+      } else if (str == "fStorageBarCode") {
+        // 根据库位条码获取对应的库位ID
+        return this.getStorageID(value);
       } else {
         return false;
       }
@@ -162,6 +169,31 @@ export default {
       this.fID = data.fID;
       console.log(data);
     },
+    // 根据库位条码获取对应的库位ID
+    async getStorageID(v) {
+      let searchWhere = {
+        Computer: "=",
+        DataFile: "fStorageBarCode",
+        Value: v
+      };
+      let res = await getTableBodyData("v_Storage_Item", [searchWhere]);
+      res = JSON.parse(
+        decryptDesCbc(res.qureyDataResult, String(this.userDes))
+      );
+      let data
+      if (res.State) {
+        if (res.Data == "[]") {
+          Toast("该库位条码不存在，请确认是否正确");
+          return;
+        }
+        data = JSON.parse(res.Data)[0];
+      } else {
+        Toast(res.Message);
+        return;
+      }
+      console.log(data)
+      this.fStorageID=data.fID
+    },
     // 整箱上架
     async allUpData() {
       // console.log("整箱上架");
@@ -177,7 +209,7 @@ export default {
         Toast("请输入容器号");
         return;
       }
-      if (this.allForm.fStorageID == "") {
+      if (this.allForm.fStorageBarCode == "") {
         Toast("请输入库位");
         return;
       }
@@ -215,8 +247,8 @@ export default {
           goodsData[key] = timeCycle(goodsData[key]);
         }
       }
-      //获取到商品信息后更改商品的库位，状态
-      goodsData.fStorageID = this.allForm.fStorageID;
+      //获取到商品信息后更改商品的库位，状态已上架
+      goodsData.fStorageID = this.fStorageID;
       goodsData.fItemState = 4;
       goodsData.fPutonNum = goodsData.fRealReceiptNum;
       goodsData.fHasPutonNum = goodsData.fRealReceiptNum;
@@ -234,7 +266,10 @@ export default {
       // console.log(upData);
       if (upData.state) {
         Toast.success("上架完成");
-        window.location.reload()
+        for (const key in this.allForm) {
+          this.allForm[key] = "";
+        }
+        // window.location.reload()
       } else {
         Toast(upData.errstr);
       }
@@ -316,7 +351,8 @@ export default {
       console.log("拆分上架");
       console.log(this.splitGoodData, this.splitForm);
       this.splitGoodData.fPutonNum = this.splitForm.fPutonNum;
-      this.splitGoodData.fStorageID = this.splitForm.fStorageID;
+      this.splitGoodData.fStorageID = this.fStorageID;
+      this.splitGoodData.fItemState = 4;
       // 已上架数量
       // this.splitGoodData.fHasPutonNum =
       //   this.splitForm.fHasPutonNum + this.splitForm.fPutonNum;
@@ -332,7 +368,9 @@ export default {
       );
       if (res.state) {
         Toast.success("上架完成");
-        window.location.reload()
+        for (const key in this.splitForm) {
+          this.splitForm[key] = "";
+        }
       } else {
         Toast(res.errstr);
       }
@@ -370,12 +408,12 @@ export default {
     },
     // 验证上架数量，不能超出待上架数量，不能少于1
     countWaitNum(v) {
-      if(v>this.mostNum){
-        Toast('数量不能超出待上架数量！')
-        this.splitForm.fPutonNum=this.mostNum
-      }else if(v<=0){
-        Toast('数量不能少于1')
-        this.splitForm.fPutonNum=1
+      if (v > this.mostNum) {
+        Toast("数量不能超出待上架数量！");
+        this.splitForm.fPutonNum = this.mostNum;
+      } else if (v <= 0) {
+        Toast("数量不能少于1");
+        this.splitForm.fPutonNum = 1;
       }
     }
   },
